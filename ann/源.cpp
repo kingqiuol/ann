@@ -17,7 +17,7 @@ int main()
 	//ann.train("./chinese_parts_train.txt", {100,50});
 
 	RNG rnger(getTickCount());
-	Mat W(6, 3, CV_32FC1);
+	Mat W(3, 3, CV_32FC1);
 	rnger.fill(W, RNG::UNIFORM, cv::Scalar::all(0.),
 		cv::Scalar::all(1.));
 	cout << W << endl;
@@ -50,6 +50,9 @@ int main()
 	//vconcat(mat, m);
 	//cout << m << endl;
 	
+	ifstream in_file("input.txt");
+	
+
 	return 0;
 }
 
