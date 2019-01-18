@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <time.h>
+#include <stdlib.h>
 #include <opencv2/opencv.hpp>
 
 using namespace std;
@@ -16,7 +17,7 @@ class NN{
 public:
 	NN(size_t classes, size_t input = 0, 
 		float reg = 0.005, float learning_rate = 0.0001,
-		size_t  max_epochs = 1000,size_t batch_size = 200) :
+		size_t  max_epochs = 5000,size_t batch_size = 500) :
 		input_(input), classes_(classes),
 		reg_(reg), learning_rate_(learning_rate),
 		max_epochs_(max_epochs), batch_size_(batch_size),
@@ -31,11 +32,11 @@ public:
 	void initial_networks();
 
 	//前向传播
-	void forward();
+	void forward(Mat &X);
 	//反向传播
 	void backward();
 	//计算损失函数
-	float loss();
+	float loss(Mat &y);
 	//更新权重
 	void update_weight();
 
@@ -58,6 +59,7 @@ public:
 	inline size_t get_epoch()const{ return this->max_epochs_; }
 private:
 	/***神经网络相关的函数***/
+	void get_batch(Mat &batch_X,Mat &batch_y);
 	void initial_layer(const size_t &input, const size_t &output);//单个层的初始化
 	void relu(Mat &X);//激励函数
 	void softmax(Mat &out);//softmax分类器

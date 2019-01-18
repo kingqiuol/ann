@@ -171,14 +171,14 @@ void NN::softmax(Mat &out)
 	out /= row_sum_expend;
 }
 
-void NN::forward()
+void NN::forward(Mat &X)
 {
 	this->out_.clear();//清空当前存储的输出
-	this->out_.push_back(*this->data_ptr);
+	this->out_.push_back(X);
 	auto it_w = this->W_.begin();
 	auto it_b = this->b_.begin();
 
-	Mat out = *this->data_ptr;
+	Mat out = X;
 	size_t num_layers = 1;
 	for (; it_w != this->W_.end(); ++it_w, ++it_b){
 		out = out*(*it_w);
@@ -213,12 +213,12 @@ float NN::L2_regular()
 	return regular*this->reg_;
 }
 
-float NN::loss()
+float NN::loss(Mat &y)
 {
 	float sum = 0.0;
 	Mat out = this->out_.back();
-	for (int i = 0; i < this->label_ptr->rows; ++i){
-		float* data = this->label_ptr->ptr<float>(i);
+	for (int i = 0; i < y.rows; ++i){
+		float* data = y.ptr<float>(i);
 		float* predict = out.ptr<float>(i);
 
 		sum -= log(predict[static_cast<int>(data[0])]);
@@ -232,7 +232,7 @@ void NN::backward()
 {
 	auto it_out = out_.rbegin();		//获取存储输出容器的迭代器
 	auto it_w = W_.rbegin();			//获取存储权重容器的迭代器
-	int num_trains = data_ptr->rows;	//训练集的总数
+	int num_trains = it_out->rows;	//训练集的总数
 	dW_.clear(); db_.clear();			//清空当前存储梯度的容器
 
 	Mat dL = (*it_out).clone();//后层的累积梯度
@@ -293,6 +293,31 @@ void NN::update_weight()
 	}
 }
 
+void NN::get_batch(Mat &batch_X, Mat &batch_y)
+{
+	srand((unsigned int)time(0));
+	int index = 0;
+	vector<Mat> vec_x,vec_y;
+	for (int i = 0; i < batch_size_; ++i){
+		index = rand() % data_ptr->rows;
+		vec_x.push_back(data_ptr->row(index).clone());
+		vec_y.push_back(label_ptr->row(index).clone());
+	}
+
+	vconcat(vec_x, batch_X);
+	vconcat(vec_y, batch_y);
+}
+
+void NN::save_weights()
+{
+		
+}
+
+void NN::load_weights()
+{
+
+}
+
 void NN::train(const string &file_path, const vector<size_t> &num_hiddens)
 {
 	//加载数据
@@ -306,15 +331,21 @@ void NN::train(const string &file_path, const vector<size_t> &num_hiddens)
 
 	size_t epoch = 0;
 	float train_loss = 0.0f;
+	float max_accuracy = 0.0f;
 	while (epoch < max_epochs_){	
-		forward();
+		//Mat batch_X,batch_y;
+		//get_batch(batch_X, batch_y);
+
+		//forward(batch_X);
+		forward(*data_ptr);
 		backward();
 		update_weight();
 
-		train_loss = loss();
+		//train_loss = loss(batch_y);
+		train_loss = loss(*label_ptr);
 		cout << "epoch:" << epoch << " ,loss:" << train_loss << endl;
 		if ((epoch+1) % 10 == 0){
-			forward();
+			forward(*data_ptr);
 			Mat out = out_.back();
 			Mat predict = argmaxes(out);
 			float sum = 0.0f;
@@ -323,9 +354,15 @@ void NN::train(const string &file_path, const vector<size_t> &num_hiddens)
 					++sum;
 				}
 			}
+			
+			float accuracy = (sum / predict.rows) * 100;
 			cout << "accuracy:" << (sum / predict.rows) * 100 << "%" << endl;
+			//if (max_accuracy < accuracy){
+			//	save_weights();
+			//}
 		}
 
 		++epoch;
 	}
 }
+

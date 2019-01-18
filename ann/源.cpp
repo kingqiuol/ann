@@ -14,12 +14,13 @@ int main()
 	NN ann(2);
 	//ann.data_loader("./chinese_parts_train.txt");
 	//ann.train("./bezdekIris.txt", {10,10,10,3});
-	ann.train("./chinese_parts_train.txt", {100,50});
-	//RNG rnger(getTickCount());
-	//Mat W(3, 3, CV_32FC1);
-	//rnger.fill(W, RNG::UNIFORM, cv::Scalar::all(0.),
-	//	cv::Scalar::all(1.));
-	//cout << W << endl;
+	//ann.train("./chinese_parts_train.txt", {100,50});
+
+	RNG rnger(getTickCount());
+	Mat W(6, 3, CV_32FC1);
+	rnger.fill(W, RNG::UNIFORM, cv::Scalar::all(0.),
+		cv::Scalar::all(1.));
+	cout << W << endl;
 
 	//Mat row;
 	//reduce(W, row, 1, REDUCE_MAX, CV_32FC1);
@@ -38,6 +39,16 @@ int main()
 	//	}
 	//}
 	//cout << sum << endl;
+
+	//srand(time(0));
+	//Mat m;
+	//vector<Mat> mat;
+	//for (int i = 0; i < 3; ++i){
+	//	int j = rand() % 6;
+	//	mat.push_back(W.row(j).clone());
+	//}
+	//vconcat(mat, m);
+	//cout << m << endl;
 	
 	return 0;
 }
