@@ -44,12 +44,12 @@ public:
 	void train(const string &file_path, const vector<size_t> &num_hiddens);
 
 	//保存权重
-	void save_weights();
+	void save_weights(const string &save_path);
 	//加载权重
-	void load_weights();
+	void load_weights(const string &load_path);
 
 	//预测
-	void predict();
+	Mat predict(Mat &data);
 
 	//其他方法
 	inline float get_learning_rate()const{ return this->learning_rate_; }
@@ -79,7 +79,6 @@ private:
 	float learning_rate_;		//学习率
 	size_t max_epochs_;			//最大训练次数
 	size_t batch_size_;			//批量处理大小
-
 private:
 	//输入数据、数据标签
 	shared_ptr<Mat> data_ptr, label_ptr;

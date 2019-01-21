@@ -232,7 +232,7 @@ void NN::backward()
 {
 	auto it_out = out_.rbegin();		//获取存储输出容器的迭代器
 	auto it_w = W_.rbegin();			//获取存储权重容器的迭代器
-	int num_trains = it_out->rows;	//训练集的总数
+	int num_trains = it_out->rows;		//训练集的总数
 	dW_.clear(); db_.clear();			//清空当前存储梯度的容器
 
 	Mat dL = (*it_out).clone();//后层的累积梯度
@@ -308,14 +308,41 @@ void NN::get_batch(Mat &batch_X, Mat &batch_y)
 	vconcat(vec_y, batch_y);
 }
 
-void NN::save_weights()
+void NN::save_weights(const string &save_path)
 {
-		
+	//创建xml
+	FileStorage fs(save_path, FileStorage::WRITE);
+	int size = static_cast<int>(W_.size());
+	fs << "size" << size;
+
+	for (int i = 0; i < size; ++i){
+		string weights = "W" + to_string(i);
+		string bias = "b" + to_string(i);
+		fs << weights << W_[i];
+		fs << bias << b_[i];
+	}
+
+	fs.release();
 }
 
-void NN::load_weights()
+void NN::load_weights(const string &load_path)
 {
+	FileStorage fr(load_path, FileStorage::READ);
+	int size;
+	fr["size"] >> size;
+	
+	for (int i = 0; i < size; ++i){
+		Mat W,b;
+		string weights = "W" + to_string(i);
+		string bias = "b" + to_string(i);
 
+		fr[weights] >> W;
+		fr[bias] >> b;
+		W_.push_back(W);
+		b_.push_back(b);
+	}
+
+	fr.release();
 }
 
 void NN::train(const string &file_path, const vector<size_t> &num_hiddens)
@@ -357,12 +384,19 @@ void NN::train(const string &file_path, const vector<size_t> &num_hiddens)
 			
 			float accuracy = (sum / predict.rows) * 100;
 			cout << "accuracy:" << (sum / predict.rows) * 100 << "%" << endl;
-			//if (max_accuracy < accuracy){
-			//	save_weights();
-			//}
+			if (max_accuracy < accuracy){
+				save_weights("./ann_model.xml");
+			}
 		}
 
 		++epoch;
 	}
+}
+
+Mat NN::predict(Mat &data)
+{
+	forward(data);
+	
+	return out_.back();
 }
 
